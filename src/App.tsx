@@ -1,26 +1,60 @@
-import React from 'react';
-import logo from './logo.svg';
+import { useEffect, useState } from 'react';
 import './App.css';
+import Loading from './componentes/Loading';
+import Tours from './componentes/Tours';
+type ToursType = {
+  id: string;
+  name: string;
+  info: string;
+  image: string;
+  price: string;
+}[]
+const url = "https://course-api.com/react-tours-project"
+export default function App() {
+  const [loading, setLoading] = useState(true)
+  const[tours, setTours] = useState<ToursType | []>([]);
 
-function App() {
+  const removeTour = (id : string) : void =>{
+    const newTours = tours.filter((tour) => tour.id !== id);
+    setTours(newTours)
+  }
+  
+  const fetchTours = async () =>{
+    setLoading(true);
+    try{
+      const response = await fetch(url);
+      const tours = await response.json();
+      setLoading(false);
+      setTours(tours)      
+    }catch(error){
+      setLoading(false)
+      console.log(error);
+      
+    }
+  }
+  useEffect(()=> {
+    fetchTours()
+  },[])
+
+  if(loading){
+    return(
+      <main>
+        <Loading/>
+      </main>
+    ) 
+  }
+  if(tours.length === 0){
+    return(
+      <main>
+        <h2 className='noTours'>No more tours</h2>
+        <button className='refresh-btn' onClick={fetchTours}> Refresh </button>
+      </main>
+    )
+  }
+  
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <main>
+      <Tours tours = {tours} removeTour = {removeTour}/>
+    </main>
   );
 }
-
-export default App;
